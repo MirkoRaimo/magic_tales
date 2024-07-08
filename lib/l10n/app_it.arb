@@ -1,0 +1,22 @@
+{
+  "appTitle": "Magic Tales it",
+  "@appTitle": {
+    "description": "Titolo dell'applicazione"
+  },
+  "textFieldHint": "Suggerisco di...",
+  "@textFieldHint": {
+    "description": "Campo di testo libero"
+  },
+  "optionAdventure": "Avventura",
+  "@optionAdventure": {
+    "description": "Opzione avventura"
+  },
+  "optionFriendship": "Amicizia",
+  "@optionFriendship": {
+    "description": "Opzione amicizia"
+  },
+  "optionMagic": "Magia",
+  "@optionMagic": {
+    "description": "Opzione magia"
+  }
+}

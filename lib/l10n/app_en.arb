@@ -1,0 +1,22 @@
+{
+  "appTitle": "Magic Tales",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "textFieldHint": "I suggest to...",
+  "@textFieldHint": {
+    "description": "Free text field"
+  },
+  "optionAdventure": "Adventure",
+  "@optionAdventure": {
+    "description": "Option adventure"
+  },
+  "optionFriendship": "Friendship",
+  "@optionFriendship": {
+    "description": "Opzione friendship"
+  },
+  "optionMagic": "Magic",
+  "@optionMagic": {
+    "description": "Opzione magic"
+  }
+}

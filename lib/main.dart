@@ -1,9 +1,13 @@
 import 'dart:convert';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:magic_tales/models/message_model.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import 'locale/bloc/locale_bloc.dart';
 import 'widgets/message_widget.dart';
 import 'widgets/prompt_button.dart';
 
@@ -13,8 +17,7 @@ import 'widgets/prompt_button.dart';
 /// check out the README file of this sample.
 
 // TODO: Replace this api calling Vertex AI
-// const String _apiKey = String.fromEnvironment('API_KEY');
-const String _apiKey = 'AIzaSyDs6_8gvkrEM587dtZR4N61aavBZw34A7w';
+const String _apiKey = String.fromEnvironment('API_KEY');
 
 const String _overallGuideLines = '''Linee guida generali:
         - Usa un linguaggio semplice e adatto ai bambini
@@ -58,7 +61,10 @@ const String _storyIdea = '''
       - Lunghezza: 3-4 frasi''';
 
 void main() {
-  runApp(const GenerativeAISample());
+  runApp(BlocProvider(
+    create: (context) => LocaleBloc(),
+    child: const GenerativeAISample(),
+  ));
 }
 
 class GenerativeAISample extends StatelessWidget {
@@ -67,58 +73,75 @@ class GenerativeAISample extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const primaryColor = Color(0xFFc3c0ff);
+    late Locale currentLocale;
 
-    return MaterialApp(
-      title: 'Magic Tales',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          brightness: Brightness.dark,
-          seedColor: const Color.fromARGB(255, 6, 1, 60),
-        ),
-        primaryColor: primaryColor,
-        inputDecorationTheme: const InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(14),
+    return BlocBuilder<LocaleBloc, LocaleState>(
+      builder: (context, state) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              brightness: Brightness.dark,
+              seedColor: const Color.fromARGB(255, 6, 1, 60),
             ),
-            borderSide: BorderSide(
-              color: primaryColor,
-              width: 4.0,
+            primaryColor: primaryColor,
+            inputDecorationTheme: const InputDecorationTheme(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(14),
+                ),
+                borderSide: BorderSide(
+                  color: primaryColor,
+                  width: 4.0,
+                ),
+              ),
+              hintStyle: TextStyle(
+                color: Colors.black,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(14),
+                ),
+                borderSide: BorderSide(
+                  color: primaryColor,
+                  width: 4.0,
+                ),
+              ),
             ),
+            textTheme: const TextTheme(
+              bodySmall: TextStyle(color: Colors.black),
+              bodyLarge: TextStyle(color: Colors.black),
+              bodyMedium: TextStyle(color: Colors.black),
+            ),
+            textSelectionTheme: const TextSelectionThemeData(
+              cursorColor: Colors.grey,
+            ),
+            useMaterial3: true,
           ),
-          hintStyle: TextStyle(
-            color: Colors.black,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(14),
-            ),
-            borderSide: BorderSide(
-              color: primaryColor,
-              width: 4.0,
-            ),
-          ),
-        ),
-        textTheme: const TextTheme(
-          bodySmall: TextStyle(color: Colors.black),
-          bodyLarge: TextStyle(color: Colors.black),
-          bodyMedium: TextStyle(color: Colors.black),
-        ),
-        textSelectionTheme: const TextSelectionThemeData(
-          cursorColor: Colors.grey,
-        ),
-        useMaterial3: true,
-      ),
-      home: const ChatScreen(title: 'Magic Tales'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          // Use english as default language
+          localeResolutionCallback: (locale, supportedLocales) {
+            if (locale == null) {
+              currentLocale = const Locale('en', '');
+              return currentLocale;
+            }
+            currentLocale = supportedLocales.firstWhere(
+              (supportedLocale) =>
+                  supportedLocale.languageCode == locale.languageCode,
+              orElse: () => const Locale('en', ''),
+            );
+            return currentLocale;
+          },
+          home: const ChatScreen(),
+        );
+      },
     );
   }
 }
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, required this.title});
-
-  final String title;
+  const ChatScreen({super.key});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -129,7 +152,42 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(
+          AppLocalizations.of(context)!.appTitle,
+        ),
+        actions: <Widget>[
+          BlocBuilder<LocaleBloc, LocaleState>(
+            builder: (context, state) {
+              String selectedLanguage = state.locale.languageCode;
+
+              return DropdownButton<String>(
+                value: selectedLanguage,
+                //value: '🇬🇧',
+                // icon: const Icon(Icons.language, color: Colors.white),
+                onChanged: (String? newValue) {
+                  if (newValue != null) {
+                    context.read<LocaleBloc>().add(ChangeLocale(newValue));
+                  }
+                },
+                items: const <DropdownMenuItem<String>>[
+                  DropdownMenuItem<String>(
+                    value: 'en',
+                    child: Text('🇬🇧'),
+                  ),
+                  DropdownMenuItem<String>(
+                    value: 'it',
+                    child: Text('🇮🇹'),
+                  ),
+                  DropdownMenuItem<String>(
+                    value: 'es',
+                    child: Text('🇪🇸'),
+                  ),
+                  // Add more languages here
+                ],
+              );
+            },
+          ),
+        ],
       ),
       body: const ChatWidget(apiKey: _apiKey),
     );
@@ -158,7 +216,7 @@ class _ChatWidgetState extends State<ChatWidget> {
 
   bool _loading = false;
   //this value determines when to ask to the user if they want to end the tale
-  int _numEnoughCycles = 3;
+  final int _numEnoughCycles = 6;
   bool _showEndStoryButton = false;
   bool _storyEnded = false;
 
@@ -178,7 +236,11 @@ class _ChatWidgetState extends State<ChatWidget> {
       safetySettings: safetySettings,
     );
     _chat = _model.startChat();
-    _generateWelcomeMessage();
+    WidgetsBinding.instance.window.locale;
+
+    final locale = ui.PlatformDispatcher.instance.locale;
+
+    _generateWelcomeMessage(locale);
   }
 
   void _scrollDown() {
@@ -195,11 +257,12 @@ class _ChatWidgetState extends State<ChatWidget> {
 
   @override
   Widget build(BuildContext context) {
-    InputDecoration textFieldDecoration = const InputDecoration(
-      contentPadding: EdgeInsets.all(15),
-      hintText: 'Suggerisco di...',
-      fillColor:
-          Color.fromARGB(166, 238, 238, 238), // Set the background color here
+    InputDecoration textFieldDecoration = InputDecoration(
+      contentPadding: const EdgeInsets.all(15),
+      // hintText: 'Suggerisco di...',
+      hintText: AppLocalizations.of(context)!.textFieldHint,
+      fillColor: const Color.fromARGB(
+          166, 238, 238, 238), // Set the background color here
       filled: true,
     );
 
@@ -267,7 +330,10 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                 );
                                               })
                                           : null,
-                                      child: const Text('Avventura'),
+                                      child: Text(
+                                        AppLocalizations.of(context)!
+                                            .optionAdventure,
+                                      ),
                                     ),
                                     PromptButton(
                                       disablePreviousButtons:
@@ -279,7 +345,8 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                 );
                                               })
                                           : null,
-                                      child: const Text('Amicizia'),
+                                      child: Text(AppLocalizations.of(context)!
+                                          .optionFriendship),
                                     ),
                                     PromptButton(
                                       disablePreviousButtons:
@@ -291,7 +358,8 @@ class _ChatWidgetState extends State<ChatWidget> {
                                                 );
                                               })
                                           : null,
-                                      child: const Text('Magia'),
+                                      child: Text(AppLocalizations.of(context)!
+                                          .optionMagic),
                                     ),
                                   ],
                                 ),
@@ -425,15 +493,18 @@ class _ChatWidgetState extends State<ChatWidget> {
     );
   }
 
-  Future<void> _sendChatMessage(String message) async {
+  Future<void> _sendChatMessage(String message,
+      {bool appendMessage = true}) async {
     setState(() {
       _loading = true;
     });
 
     try {
       // _generatedContent.add((image: null, text: message, fromUser: true));
-      _generatedContent
-          .add((MessageModel(image: null, text: message, fromUser: true)));
+      if (appendMessage) {
+        _generatedContent
+            .add((MessageModel(image: null, text: message, fromUser: true)));
+      }
       setState(() {
         _scrollDown();
       });
@@ -455,7 +526,8 @@ class _ChatWidgetState extends State<ChatWidget> {
       _showError(e.toString(), onPressed: () {
         Navigator.of(context).pop();
         _sendChatMessage(
-            'Generate a new response for the following message because the previous one has been blocked due to our policies: $message');
+            'Generate a new response for the message $message. The previous one got the following issue ${e.toString()}',
+            appendMessage: false);
       });
 
       setState(() {
@@ -511,8 +583,10 @@ class _ChatWidgetState extends State<ChatWidget> {
     );
   }
 
-  Future<void> _generateWelcomeMessage() async {
-    const welcomePrompt = '''
+  Future<void> _generateWelcomeMessage(Locale locale) async {
+    String welcomePrompt = '''
+    A prescindere dal resto del testo, la risposta dovrà essere in lingua: ${locale.languageCode.toUpperCase()}
+
     Genera un messaggio di benvenuto per un'app di narrazione interattiva per bambini, seguendo queste linee guida:
     - Tono: Amichevole ed entusiasta
     - Lunghezza: 2-3 frasi
