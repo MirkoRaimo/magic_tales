@@ -231,34 +231,37 @@ class _ChatWidgetState extends State<ChatWidget> {
                                     PromptButton(
                                       disablePreviousButtons:
                                           disablePreviousButtons,
-                                      onPressed: () => setState(() {
-                                        disablePreviousButtons = true;
-                                        _generateCharacterName(
-                                          'avventura',
-                                        );
-                                      }),
+                                      onPressed: !_loading
+                                          ? () => setState(() {
+                                                _generateCharacterName(
+                                                  'avventura',
+                                                );
+                                              })
+                                          : null,
                                       child: const Text('Avventura'),
                                     ),
                                     PromptButton(
                                       disablePreviousButtons:
                                           disablePreviousButtons,
-                                      onPressed: () => setState(() {
-                                        disablePreviousButtons = true;
-                                        _generateCharacterName(
-                                          'amicizia',
-                                        );
-                                      }),
+                                      onPressed: !_loading
+                                          ? () => setState(() {
+                                                _generateCharacterName(
+                                                  'amicizia',
+                                                );
+                                              })
+                                          : null,
                                       child: const Text('Amicizia'),
                                     ),
                                     PromptButton(
                                       disablePreviousButtons:
                                           disablePreviousButtons,
-                                      onPressed: () => setState(() {
-                                        disablePreviousButtons = true;
-                                        _generateCharacterName(
-                                          'magia',
-                                        );
-                                      }),
+                                      onPressed: !_loading
+                                          ? () => setState(() {
+                                                _generateCharacterName(
+                                                  'magia',
+                                                );
+                                              })
+                                          : null,
                                       child: const Text('Magia'),
                                     ),
                                   ],
