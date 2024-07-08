@@ -13,7 +13,8 @@ import 'widgets/prompt_button.dart';
 /// check out the README file of this sample.
 
 // TODO: Replace this api calling Vertex AI
-const String _apiKey = String.fromEnvironment('API_KEY');
+// const String _apiKey = String.fromEnvironment('API_KEY');
+const String _apiKey = 'AIzaSyDs6_8gvkrEM587dtZR4N61aavBZw34A7w';
 
 const String _overallGuideLines = '''Linee guida generali:
         - Usa un linguaggio semplice e adatto ai bambini
@@ -431,7 +432,8 @@ class _ChatWidgetState extends State<ChatWidget> {
     Genera un messaggio di benvenuto per un'app di narrazione interattiva per bambini, seguendo queste linee guida:
     - Tono: Amichevole ed entusiasta
     - Lunghezza: 2-3 frasi
-    - Contenuto: Saluta il bambino, introduci l'idea di creare una storia insieme, chiedi che tipo di avventura vorrebbero iniziare oggi
+    - Contenuto: Saluta il bambino, introduci l'idea di creare una storia insieme, chiedi che tipo di avventura vorrebbero iniziare oggi.
+    - Ricorda ai bambini che possono usare scrivere e proporre delle loro idee se quelle suggerite dall'ai non piacciono
     - Termina con una domanda che introduce le opzioni di genere (avventura, amicizia, magia)
     Massimo 40 parole.
 
