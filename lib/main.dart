@@ -1,17 +1,3 @@
-// Copyright 2024 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -49,6 +35,15 @@ const String _messageFinalPart =
     ]
   }''';
 
+const String _storyIdea = '''
+      Nel corso della chat, la storia dovrà avere questo stile:
+
+      - Protagonista: Un giovane esploratore, scienziato, chimico, artista, inventore, apprendista stregone, tritone, sirena, ma non obbligatoriamente uno di questi. Scegli tu.
+      - Ambientazione: Una giungla misteriosa, un'isola sconosciuta, un relitto sommerso, una vecchia cattedrale, un laboratorio, un labirinto, una foresta, una spiaggia, una montagna, un ghiacciaio, una nave, un vascello, un altro pianeta, ma non obbligatoriamente uno di questi. Scegli tu.
+      - Elemento chiave: Una mappa del tesoro o un artefatto antico, un incantesimo, una pergamena, un manufatto, un oggetto comune, ma non obbligatoriamente uno di questi. Scegli tu.
+      - Tono: Eccitante ma non spaventoso
+      - Lunghezza: 3-4 frasi''';
+
 void main() {
   runApp(const GenerativeAISample());
 }
@@ -66,7 +61,6 @@ class GenerativeAISample extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           brightness: Brightness.dark,
-          // seedColor: const Color.fromARGB(255, 171, 222, 244),
           seedColor: const Color.fromARGB(255, 6, 1, 60),
         ),
         primaryColor: primaryColor,
@@ -97,8 +91,6 @@ class GenerativeAISample extends StatelessWidget {
           bodySmall: TextStyle(color: Colors.black),
           bodyLarge: TextStyle(color: Colors.black),
           bodyMedium: TextStyle(color: Colors.black),
-
-          // Add other text styles as needed
         ),
         textSelectionTheme: const TextSelectionThemeData(
           cursorColor: Colors.grey,
@@ -161,7 +153,6 @@ class _ChatWidgetState extends State<ChatWidget> {
       apiKey: widget.apiKey,
     );
     _chat = _model.startChat();
-    //_generatedContent.add((image: null, text: 'Loading...', fromUser: false));
     _generateWelcomeMessage();
   }
 
@@ -186,8 +177,6 @@ class _ChatWidgetState extends State<ChatWidget> {
           Color.fromARGB(166, 238, 238, 238), // Set the background color here
       filled: true,
     );
-
-    String choosenRoot = '';
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -239,34 +228,11 @@ class _ChatWidgetState extends State<ChatWidget> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceEvenly,
                                   children: [
-                                    // PromptButton(
-                                    //   disablePreviousButtons:
-                                    //       disablePreviousButtons,
-                                    //   onPressed: () =>
-                                    //       _generateStoryStart('avventura'),
-                                    //   child: const Text('Avventura'),
-                                    // ),
-                                    // PromptButton(
-                                    //   disablePreviousButtons:
-                                    //       disablePreviousButtons,
-                                    //   onPressed: () =>
-                                    //       _generateStoryStart('amicizia'),
-                                    //   child: const Text('Amicizia'),
-                                    // ),
-                                    // PromptButton(
-                                    //   disablePreviousButtons:
-                                    //       disablePreviousButtons,
-                                    //   onPressed: () =>
-                                    //       _generateStoryStart('mnagia'),
-                                    //   child: const Text('Magia'),
-                                    // ),
-
                                     PromptButton(
                                       disablePreviousButtons:
                                           disablePreviousButtons,
                                       onPressed: () => setState(() {
                                         disablePreviousButtons = true;
-                                        choosenRoot = 'avventura';
                                         _generateCharacterName(
                                           'avventura',
                                         );
@@ -278,7 +244,6 @@ class _ChatWidgetState extends State<ChatWidget> {
                                           disablePreviousButtons,
                                       onPressed: () => setState(() {
                                         disablePreviousButtons = true;
-                                        choosenRoot = 'amicizia';
                                         _generateCharacterName(
                                           'amicizia',
                                         );
@@ -290,7 +255,6 @@ class _ChatWidgetState extends State<ChatWidget> {
                                           disablePreviousButtons,
                                       onPressed: () => setState(() {
                                         disablePreviousButtons = true;
-                                        choosenRoot = 'magia';
                                         _generateCharacterName(
                                           'magia',
                                         );
@@ -523,63 +487,6 @@ class _ChatWidgetState extends State<ChatWidget> {
     return jsonResponse;
   }
 
-  Future<void> _generateStoryStart(String genre) async {
-    String prompt;
-    switch (genre) {
-      case 'avventura':
-        prompt = '''
-        Crea l'inizio di una storia avventurosa per bambini dai 7 ai 12 anni:
-        - Protagonista: Un giovane esploratore o esploratrice
-        - Ambientazione: Una giungla misteriosa o un'isola sconosciuta
-        - Elemento chiave: Una mappa del tesoro o un artefatto antico
-        - Tono: Eccitante ma non spaventoso
-        - Lunghezza: 3-4 frasi
-        - Finale: Una domanda o scelta per il lettore (es. "Quale sentiero dovrebbe prendere?")
-        Massimo 60 parole.
-
-        $_messageFinalPart
-
-        $_overallGuideLines
-        ''';
-        break;
-      case 'amicizia':
-        prompt = '''
-        Scrivi l'apertura di una storia di amicizia per bambini dai 7 ai 12 anni:
-        - Personaggi: Due bambini che si incontrano per la prima volta
-        - Ambientazione: Un parco giochi o il primo giorno di scuola
-        - Elemento chiave: Un hobby condiviso o un problema da risolvere insieme
-        - Tono: Divertente e ottimista
-        - Lunghezza: 3-4 frasi
-        - Finale: Una domanda sul come i personaggi potrebbero diventare amici
-        Massimo 60 parole.
-
-        $_messageFinalPart
-
-        $_overallGuideLines
-        ''';
-        break;
-      case 'magia':
-        prompt = '''
-        Genera l'inizio di una storia magica per bambini dai 7 ai 12 anni:
-        - Protagonista: Un giovane apprendista mago/strega
-        - Ambientazione: Una scuola di magia o un negozio di oggetti magici
-        - Elemento chiave: Un incantesimo che ha un effetto inaspettato
-        - Tono: Meraviglioso e leggermente comico
-        - Lunghezza: 3-4 frasi
-        - Finale: Una domanda su come il protagonista potrebbe risolvere il pasticcio magico
-        Massimo 60 parole.
-
-        $_messageFinalPart
-
-        $_overallGuideLines
-        ''';
-        break;
-      default:
-        prompt = 'Genera una breve storia per bambini.';
-    }
-    addInitialMessage(prompt);
-  }
-
   Future<void> _generateCharacterName(String genre) async {
     String prompt = '''
         Crea 3 nomi da protagonisti per una storia di genere $genre
@@ -603,3 +510,11 @@ class _ChatWidgetState extends State<ChatWidget> {
     addInitialMessage(prompt);
   }
 }
+
+// - Protagonista: Un giovane esploratore, scienziato, chimico, artista, inventore, apprendista stregone, tritone, sirena, ma non obbligatoriamente uno di questi. Scegli tu.
+//         - Ambientazione: Una giungla misteriosa, un'isola sconosciuta, un relitto sommerso, una vecchia cattedrale, un laboratorio, un labirinto, una foresta, una spiaggia, una montagna, un ghiacciaio, una nave, un vascello, un altro pianeta, ma non obbligatoriamente uno di questi. Scegli tu.
+//         - Elemento chiave: Una mappa del tesoro o un artefatto antico, un incantesimo, una pergamena, un manufatto, un oggetto comune, ma non obbligatoriamente uno di questi. Scegli tu.
+//         - Tono: Eccitante ma non spaventoso
+//         - Lunghezza: 3-4 frasi
+//         - Finale: Una domanda o scelta per il lettore (es. "Quale sentiero dovrebbe prendere?")
+//         Massimo 60 parole.
