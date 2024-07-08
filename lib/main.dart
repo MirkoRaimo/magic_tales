@@ -36,6 +36,18 @@ const String _messageFinalPart =
     ]
   }''';
 
+const String _messageEndingPart =
+    '''Non fornire nessun opzione. Compila il campo story. Il campo options deve essere un array vuoto.
+
+  NON aggiungere parole superflue (e.g. json {...}). Rispondi solo usando il seguente formato JSON:
+
+  {
+    "story": "Il testo della storia qui",
+    "options": [leave this empty
+      
+    ]
+  }''';
+
 const String _storyIdea = '''
       Nel corso della chat, la storia dovrà avere questo stile:
 
@@ -145,6 +157,17 @@ class _ChatWidgetState extends State<ChatWidget> {
   final List<MessageModel> _generatedContent = [];
 
   bool _loading = false;
+  //this value determines when to ask to the user if they want to end the tale
+  int _numEnoughCycles = 3;
+  bool _showEndStoryButton = false;
+  bool _storyEnded = false;
+
+  final safetySettings = [
+    SafetySetting(HarmCategory.harassment, HarmBlockThreshold.low),
+    SafetySetting(HarmCategory.hateSpeech, HarmBlockThreshold.low),
+    SafetySetting(HarmCategory.sexuallyExplicit, HarmBlockThreshold.low),
+    SafetySetting(HarmCategory.dangerousContent, HarmBlockThreshold.low),
+  ];
 
   @override
   void initState() {
@@ -152,6 +175,7 @@ class _ChatWidgetState extends State<ChatWidget> {
     _model = GenerativeModel(
       model: 'gemini-1.5-flash-latest',
       apiKey: widget.apiKey,
+      safetySettings: safetySettings,
     );
     _chat = _model.startChat();
     _generateWelcomeMessage();
@@ -197,6 +221,10 @@ class _ChatWidgetState extends State<ChatWidget> {
                   ? ListView.builder(
                       controller: _scrollController,
                       itemBuilder: (context, index) {
+                        if (index / 2 > _numEnoughCycles) {
+                          _showEndStoryButton = true;
+                        }
+
                         //Disabling buttons for messages that are not the latest one
                         bool disablePreviousButtons =
                             index == _generatedContent.length - 1;
@@ -317,30 +345,77 @@ class _ChatWidgetState extends State<ChatWidget> {
                 vertical: 25,
                 horizontal: 15,
               ),
-              child: Row(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: TextField(
-                      autofocus: true,
-                      focusNode: _textFieldFocus,
-                      decoration: textFieldDecoration,
-                      controller: _textController,
-                      onSubmitted: _sendChatMessage,
+                  if (_showEndStoryButton)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 0.0),
+                          child: ElevatedButton(
+                            onPressed: _loading || _storyEnded
+                                ? null
+                                : () {
+                                    _generateEndingMessage();
+                                    setState(() {
+                                      _storyEnded = true;
+                                    });
+                                  },
+                            style: ButtonStyle(
+                              backgroundColor:
+                                  WidgetStateProperty.resolveWith<Color>(
+                                (Set<WidgetState> states) {
+                                  if (states.contains(WidgetState.disabled)) {
+                                    return Theme.of(context).disabledColor;
+                                  }
+                                  return Theme.of(context).colorScheme.primary;
+                                },
+                              ),
+                            ),
+                            child: Text(
+                              'Concludi la storia',
+                              style: TextStyle(
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium!
+                                      .color),
+                            ),
+                          ),
+                        ),
+
+                        // FloatingActionButton(child: TextButton('Concludi la storia'), onPressed: null),
+                      ],
                     ),
-                  ),
-                  const SizedBox.square(dimension: 15),
-                  if (!_loading)
-                    IconButton(
-                      onPressed: () async {
-                        _sendChatMessage(_textController.text);
-                      },
-                      icon: Icon(
-                        Icons.send,
-                        color: Theme.of(context).colorScheme.primary,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          autofocus: true,
+                          focusNode: _textFieldFocus,
+                          decoration: textFieldDecoration,
+                          controller: _textController,
+                          onSubmitted: _sendChatMessage,
+                        ),
                       ),
-                    )
-                  else
-                    const CircularProgressIndicator(),
+                      const SizedBox.square(dimension: 15),
+                      if (!_loading)
+                        IconButton(
+                          onPressed: _loading || _storyEnded
+                              ? null
+                              : () async {
+                                  _sendChatMessage(_textController.text);
+                                },
+                          icon: Icon(
+                            Icons.send,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        )
+                      else
+                        const CircularProgressIndicator(),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -377,7 +452,12 @@ class _ChatWidgetState extends State<ChatWidget> {
         return;
       }
     } catch (e) {
-      _showError(e.toString());
+      _showError(e.toString(), onPressed: () {
+        Navigator.of(context).pop();
+        _sendChatMessage(
+            'Generate a new response for the following message because the previous one has been blocked due to our policies: $message');
+      });
+
       setState(() {
         _loading = false;
       });
@@ -405,21 +485,25 @@ class _ChatWidgetState extends State<ChatWidget> {
     }
   }
 
-  void _showError(String message) {
+  void _showError(String message, {VoidCallback? onPressed}) {
     showDialog<void>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Something went wrong'),
+          title: const Text('Not so fast!'),
           content: SingleChildScrollView(
-            child: SelectableText(message),
+            child: SelectableText(
+              message,
+              style: const TextStyle(color: Colors.white),
+            ),
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
+              onPressed: onPressed ??
+                  () {
+                    Navigator.of(context).pop();
+                  },
+              child: const Text('Ok', style: TextStyle(color: Colors.white)),
             )
           ],
         );
@@ -438,6 +522,21 @@ class _ChatWidgetState extends State<ChatWidget> {
     Massimo 40 parole.
 
     $_messageFinalPart
+
+    $_overallGuideLines
+    ''';
+
+    await addInitialMessage(welcomePrompt);
+  }
+
+  Future<void> _generateEndingMessage() async {
+    const welcomePrompt = '''
+    Concludi la storia.
+    Il finale deve essere inaspettato, ma appagante per il lettore.
+    In poche parole, ricorda anche da dove è partito il protagonista e dove è arrivato, magari sottolineando il tratto caratteristico del protagonista che l'ha portato lì (e.g. la sua ironia, il suo coraggio, la sua caparbietà ecc...)
+    Massimo 80 parole
+
+    $_messageEndingPart
 
     $_overallGuideLines
     ''';
