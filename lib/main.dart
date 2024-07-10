@@ -120,7 +120,9 @@ class GenerativeAISample extends StatelessWidget {
           ),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
+          locale: state.locale,
           // Use english as default language
+          // It is used when the app starts
           localeResolutionCallback: (locale, supportedLocales) {
             if (locale == null) {
               currentLocale = const Locale('en', '');
