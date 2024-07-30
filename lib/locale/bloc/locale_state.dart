@@ -7,7 +7,7 @@ sealed class LocaleState {
 }
 
 final class LocaleInitial extends LocaleState {
-  const LocaleInitial() : super(const Locale('en'));
+  const LocaleInitial() : super(const Locale('it'));
 }
 
 final class LocaleChanged extends LocaleState {

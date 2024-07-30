@@ -120,18 +120,19 @@ class GenerativeAISample extends StatelessWidget {
           ),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          locale: state.locale,
+          // locale: state.locale,
+          locale: const Locale('it', ''),
           // Use english as default language
           // It is used when the app starts
           localeResolutionCallback: (locale, supportedLocales) {
             if (locale == null) {
-              currentLocale = const Locale('en', '');
+              currentLocale = const Locale('it', '');
               return currentLocale;
             }
             currentLocale = supportedLocales.firstWhere(
               (supportedLocale) =>
                   supportedLocale.languageCode == locale.languageCode,
-              orElse: () => const Locale('en', ''),
+              orElse: () => const Locale('it', ''),
             );
             return currentLocale;
           },
@@ -173,13 +174,14 @@ class _ChatScreenState extends State<ChatScreen> {
                 },
                 items: const <DropdownMenuItem<String>>[
                   DropdownMenuItem<String>(
-                    value: 'en',
-                    child: Text('🇬🇧'),
-                  ),
-                  DropdownMenuItem<String>(
                     value: 'it',
                     child: Text('🇮🇹'),
                   ),
+                  DropdownMenuItem<String>(
+                    value: 'en',
+                    child: Text('🇬🇧'),
+                  ),
+
                   DropdownMenuItem<String>(
                     value: 'es',
                     child: Text('🇪🇸'),
@@ -223,10 +225,17 @@ class _ChatWidgetState extends State<ChatWidget> {
   bool _storyEnded = false;
 
   final safetySettings = [
-    SafetySetting(HarmCategory.harassment, HarmBlockThreshold.low),
-    SafetySetting(HarmCategory.hateSpeech, HarmBlockThreshold.low),
-    SafetySetting(HarmCategory.sexuallyExplicit, HarmBlockThreshold.low),
-    SafetySetting(HarmCategory.dangerousContent, HarmBlockThreshold.low),
+    // SafetySetting(HarmCategory.harassment, HarmBlockThreshold.low),
+    // SafetySetting(HarmCategory.hateSpeech, HarmBlockThreshold.low),
+    // SafetySetting(HarmCategory.sexuallyExplicit, HarmBlockThreshold.low),
+    // SafetySetting(HarmCategory.dangerousContent, HarmBlockThreshold.low),
+
+    SafetySetting(HarmCategory.harassment, HarmBlockThreshold.unspecified),
+    SafetySetting(HarmCategory.hateSpeech, HarmBlockThreshold.unspecified),
+    SafetySetting(
+        HarmCategory.sexuallyExplicit, HarmBlockThreshold.unspecified),
+    SafetySetting(
+        HarmCategory.dangerousContent, HarmBlockThreshold.unspecified),
   ];
 
   @override
@@ -587,7 +596,7 @@ class _ChatWidgetState extends State<ChatWidget> {
 
   Future<void> _generateWelcomeMessage(Locale locale) async {
     String welcomePrompt = '''
-    A prescindere dal resto del testo, la risposta dovrà essere in lingua: ${locale.languageCode.toUpperCase()}
+    A prescindere dal resto del testo, la risposta dovrà essere in lingua: italiano
 
     Genera un messaggio di benvenuto per un'app di narrazione interattiva per bambini, seguendo queste linee guida:
     - Tono: Amichevole ed entusiasta
