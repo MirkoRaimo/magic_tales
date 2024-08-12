@@ -17,6 +17,7 @@ import 'widgets/prompt_button.dart';
 /// check out the README file of this sample.
 
 // TODO: Replace this api calling Vertex AI
+const String _apiKey = String.fromEnvironment('API_KEY');
 
 const String _overallGuideLines = '''Linee guida generali:
         - A prescindere dal resto del testo, la risposta dovrà essere in lingua: inglese
