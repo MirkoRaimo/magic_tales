@@ -17,9 +17,9 @@ import 'widgets/prompt_button.dart';
 /// check out the README file of this sample.
 
 // TODO: Replace this api calling Vertex AI
-const String _apiKey = String.fromEnvironment('API_KEY');
 
 const String _overallGuideLines = '''Linee guida generali:
+        - A prescindere dal resto del testo, la risposta dovrà essere in lingua: inglese
         - Usa un linguaggio semplice e adatto ai bambini
         - Evita riferimenti a violenza, paura o temi adulti
         - Incoraggia l'immaginazione e la partecipazione del lettore
@@ -60,11 +60,26 @@ const String _storyIdea = '''
       - Tono: Eccitante ma non spaventoso
       - Lunghezza: 3-4 frasi''';
 
+const double desktopMaxWidthPx = 500.0;
+
 void main() {
-  runApp(BlocProvider(
-    create: (context) => LocaleBloc(),
-    child: const GenerativeAISample(),
-  ));
+  runApp(
+    BlocProvider(
+      create: (context) => LocaleBloc(),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Center(
+            child: Container(
+              width: constraints.maxWidth > desktopMaxWidthPx
+                  ? desktopMaxWidthPx
+                  : constraints.maxWidth,
+              child: const GenerativeAISample(),
+            ),
+          );
+        },
+      ),
+    ),
+  );
 }
 
 class GenerativeAISample extends StatelessWidget {
@@ -121,18 +136,18 @@ class GenerativeAISample extends StatelessWidget {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           // locale: state.locale,
-          locale: const Locale('it', ''),
+          locale: const Locale('en', ''),
           // Use english as default language
           // It is used when the app starts
           localeResolutionCallback: (locale, supportedLocales) {
             if (locale == null) {
-              currentLocale = const Locale('it', '');
+              currentLocale = const Locale('en', '');
               return currentLocale;
             }
             currentLocale = supportedLocales.firstWhere(
               (supportedLocale) =>
                   supportedLocale.languageCode == locale.languageCode,
-              orElse: () => const Locale('it', ''),
+              orElse: () => const Locale('en', ''),
             );
             return currentLocale;
           },
@@ -158,40 +173,40 @@ class _ChatScreenState extends State<ChatScreen> {
         title: Text(
           AppLocalizations.of(context)!.appTitle,
         ),
-        actions: <Widget>[
-          BlocBuilder<LocaleBloc, LocaleState>(
-            builder: (context, state) {
-              String selectedLanguage = state.locale.languageCode;
+        // actions: <Widget>[
+        //   BlocBuilder<LocaleBloc, LocaleState>(
+        //     builder: (context, state) {
+        //       String selectedLanguage = state.locale.languageCode;
 
-              return DropdownButton<String>(
-                value: selectedLanguage,
-                //value: '🇬🇧',
-                // icon: const Icon(Icons.language, color: Colors.white),
-                onChanged: (String? newValue) {
-                  if (newValue != null) {
-                    context.read<LocaleBloc>().add(ChangeLocale(newValue));
-                  }
-                },
-                items: const <DropdownMenuItem<String>>[
-                  DropdownMenuItem<String>(
-                    value: 'it',
-                    child: Text('🇮🇹'),
-                  ),
-                  DropdownMenuItem<String>(
-                    value: 'en',
-                    child: Text('🇬🇧'),
-                  ),
+        //       return DropdownButton<String>(
+        //         value: selectedLanguage,
+        //         //value: '🇬🇧',
+        //         // icon: const Icon(Icons.language, color: Colors.white),
+        //         onChanged: (String? newValue) {
+        //           if (newValue != null) {
+        //             context.read<LocaleBloc>().add(ChangeLocale(newValue));
+        //           }
+        //         },
+        //         items: const <DropdownMenuItem<String>>[
+        //           DropdownMenuItem<String>(
+        //             value: 'it',
+        //             child: Text('🇮🇹'),
+        //           ),
+        //           DropdownMenuItem<String>(
+        //             value: 'en',
+        //             child: Text('🇬🇧'),
+        //           ),
 
-                  DropdownMenuItem<String>(
-                    value: 'es',
-                    child: Text('🇪🇸'),
-                  ),
-                  // Add more languages here
-                ],
-              );
-            },
-          ),
-        ],
+        //           DropdownMenuItem<String>(
+        //             value: 'es',
+        //             child: Text('🇪🇸'),
+        //           ),
+        //           // Add more languages here
+        //         ],
+        //       );
+        //     },
+        //   ),
+        // ],
       ),
       body: const ChatWidget(apiKey: _apiKey),
     );
@@ -454,7 +469,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                               ),
                             ),
                             child: Text(
-                              'Concludi la storia',
+                              'Terminate the tale',
                               style: TextStyle(
                                   color: Theme.of(context)
                                       .textTheme
@@ -596,7 +611,7 @@ class _ChatWidgetState extends State<ChatWidget> {
 
   Future<void> _generateWelcomeMessage(Locale locale) async {
     String welcomePrompt = '''
-    A prescindere dal resto del testo, la risposta dovrà essere in lingua: italiano
+    A prescindere dal resto del testo, la risposta dovrà essere in lingua: inglese
 
     Genera un messaggio di benvenuto per un'app di narrazione interattiva per bambini, seguendo queste linee guida:
     - Tono: Amichevole ed entusiasta
